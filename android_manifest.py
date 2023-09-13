@@ -123,4 +123,5 @@ class AndroidManifestCommand(sublime_plugin.TextCommand):
         text = self.view.substr(region).encode('utf-8')
         if len(text) > 0:
             result = android_xml_formatter.format(text)
-            self.view.replace(edit, region, result)
+            if result != text:
+                self.view.replace(edit, region, result)
