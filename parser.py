@@ -9,11 +9,6 @@ NS_TOOLS = 'http://schemas.android.com/tools'
 NS_DICT = {NS_ANDROID: 'android', NS_APP: 'app', NS_TOOLS: 'tools'}
 
 
-def _is_tag_hope_newline(tag):
-    return tag in ['application', 'activity', 'activity-alias', 'provider', 'service', 'receiver', 'uses-feature',
-                   'uses-permission', 'meta-data']
-
-
 class AndroidXmlFormatter:
 
     def __init__(self):
@@ -63,7 +58,9 @@ class AndroidXmlFormatter:
         attr_lines = []
 
         # namespace
+        have_ns = False
         if level == 0:
+            have_ns = len(self.namespace) > 0
             for name in self.namespace:
                 alize = self.namespace[name]
                 attr_lines.append(f'xmlns:{alize}="{name}"')
@@ -77,7 +74,7 @@ class AndroidXmlFormatter:
         attr_count = len(attr_lines)
         if attr_count > 0:
             self.result += ' '
-            if attr_count > 1 and (_is_tag_hope_newline(tag) or attr_count == 2):
+            if not have_ns and attr_count > 1:
                 self.result += separator
         self.result += separator.join(attr_lines)
 
