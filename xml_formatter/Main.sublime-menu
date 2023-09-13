@@ -6,12 +6,12 @@
         [
             {
                 "id": "android",
-                "caption": "Android",
+                "caption": "Android Formatter",
                 "children":
                 [
                     {
-                        "caption": "AndroidXmlFormatter",
-	    				"command": "android_xml_formatter",
+                        "caption": "Format XML",
+                        "command": "android_xml_formatter",
                     }
                 ]
             }
