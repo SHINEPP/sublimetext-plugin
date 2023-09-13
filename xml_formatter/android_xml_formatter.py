@@ -47,10 +47,10 @@ class AndroidXmlFormatter:
 
     def _handle_element(self, root, level, index):
         tag = root.tag
-        if self.last_element is None or tag != self.last_element.tag:
+        if index == 0 or self.last_element is None or tag != self.last_element.tag:
             if index > 0:
                 self.result += os.linesep
-            elif len(self.elements) > 0 and len(self.elements[-1].attrib) > 0:
+            elif len(self.elements) > 0 and len(self.elements[-1].attrib) > 1:
                 self.result += os.linesep
 
         # tag start
