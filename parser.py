@@ -1,8 +1,12 @@
 import re
 import xml.etree.ElementTree as ET
 
+NS_ANDROID = 'http://schemas.android.com/apk/res/android'
+NS_APP = 'http://schemas.android.com/apk/res-auto'
+NS_TOOLS = 'http://schemas.android.com/tools'
 
-class ManifestFormatter:
+
+class AndroidXmlFormatter:
 
     def __init__(self):
         self.namespace = []
@@ -105,4 +109,4 @@ def is_tag_newline(tag):
 if __name__ == '__main__':
     path = '/Users/zhouzhenliang/Desktop/apk2/FreshWallpapers_1.0.4/resources/AndroidManifest.xml'
     with open(path, 'r') as file:
-        ManifestFormatter().format(file.read())
+        AndroidXmlFormatter().format(file.read())
