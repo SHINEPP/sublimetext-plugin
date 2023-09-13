@@ -1,3 +1,4 @@
+import os
 import re
 import xml.etree.ElementTree as ET
 
@@ -14,15 +15,23 @@ class AndroidXmlFormatter:
         self.namespace = {}
         self.elements = []
         self.last_element = None
+        self.result = ''
         self.pattern = re.compile(r'\{(.+)}(.+)')
 
     def format(self, text):
-        root = ET.fromstring(text)
-        self.handle_namespace(root)
-        print('<?xml version="1.0" encoding="utf-8"?>')
-        self.handle_element(root, 0, 0)
+        self.namespace.clear()
+        self.elements.clear()
+        self.last_element = None
+        self.result = ''
 
-    def handle_namespace(self, root):
+        root = ET.fromstring(text)
+        self._handle_namespace(root)
+
+        self.result += '<?xml version="1.0" encoding="utf-8"?>' + os.linesep
+        self._handle_element(root, 0, 0)
+        return self.result
+
+    def _handle_namespace(self, root):
         attrib = root.attrib
         for attr_key in attrib:
             match = self.pattern.match(attr_key)
@@ -31,21 +40,21 @@ class AndroidXmlFormatter:
                 if name in NS_DICT and name not in self.namespace:
                     self.namespace[name] = NS_DICT[name]
         for element in root:
-            self.handle_namespace(element)
+            self._handle_namespace(element)
 
-    def handle_element(self, root, level, index):
+    def _handle_element(self, root, level, index):
         tag = root.tag
         if self.last_element is None or tag != self.last_element.tag:
             if index > 0:
-                print()
+                self.result += os.linesep
             elif len(self.elements) > 0 and len(self.elements[-1].attrib) > 0:
-                print()
+                self.result += os.linesep
 
         # tag start
         self.elements.append(root)
         self.last_element = root
         space = " " * level * 4
-        print(f'{space}<{tag}', end='')
+        self.result += f'{space}<{tag}'
         attr_lines = []
 
         # namespace
@@ -57,32 +66,32 @@ class AndroidXmlFormatter:
         # 属性
         attrib = root.attrib
         for key in attrib:
-            name = self.get_attr_name_alize(key)
+            name = self._get_attr_name_alize(key)
             attr_lines.append(f'{name}="{attrib[key]}"')
         separator = f'\n{space}{" " * 4}'
         attr_count = len(attr_lines)
         if attr_count > 0:
-            print(' ', end='')
-            if attr_count > 1 and (is_tag_attr_newline(tag) or attr_count == 2):
-                print(separator, end='')
-        print(separator.join(attr_lines), end='')
+            self.result += ' '
+            if attr_count > 1 and (_is_tag_hope_newline(tag) or attr_count == 2):
+                self.result += separator
+        self.result += separator.join(attr_lines)
 
         # 处理子元素
         if len(root) <= 0:
-            print('/>')
+            self.result += '/>' + os.linesep
         else:
-            print('>')
+            self.result += '>' + os.linesep
             i = -1
             for element in root:
                 i += 1
-                self.handle_element(element, level + 1, i)
-            print(f'{space}</{tag}>')
+                self._handle_element(element, level + 1, i)
+            self.result += f'{space}</{tag}>{os.linesep}'
 
         # tag end
         self.last_element = root
         self.elements.pop()
 
-    def get_attr_name_alize(self, key):
+    def _get_attr_name_alize(self, key):
         """
         判读是否使用namespace, 如何存在则返回别名, 其他则key
         :param key:
@@ -97,7 +106,7 @@ class AndroidXmlFormatter:
         return key
 
 
-def is_tag_attr_newline(tag):
+def _is_tag_hope_newline(tag):
     return tag in ['application', 'activity', 'activity-alias', 'provider', 'service', 'receiver', 'uses-feature',
                    'uses-permission', 'meta-data']
 
@@ -105,4 +114,4 @@ def is_tag_attr_newline(tag):
 if __name__ == '__main__':
     path = '/Users/zhouzhenliang/Desktop/apk2/FreshWallpapers_1.0.4/resources/AndroidManifest.xml'
     with open(path, 'r') as file:
-        AndroidXmlFormatter().format(file.read())
+        print(AndroidXmlFormatter().format(file.read()))
