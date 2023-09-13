@@ -9,6 +9,11 @@ NS_TOOLS = 'http://schemas.android.com/tools'
 NS_DICT = {NS_ANDROID: 'android', NS_APP: 'app', NS_TOOLS: 'tools'}
 
 
+def _is_tag_hope_newline(tag):
+    return tag in ['application', 'activity', 'activity-alias', 'provider', 'service', 'receiver', 'uses-feature',
+                   'uses-permission', 'meta-data']
+
+
 class AndroidXmlFormatter:
 
     def __init__(self):
@@ -104,11 +109,6 @@ class AndroidXmlFormatter:
                 alize = self.namespace[name1]
                 return f'{alize}:{name2}'
         return key
-
-
-def _is_tag_hope_newline(tag):
-    return tag in ['application', 'activity', 'activity-alias', 'provider', 'service', 'receiver', 'uses-feature',
-                   'uses-permission', 'meta-data']
 
 
 if __name__ == '__main__':
