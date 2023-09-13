@@ -114,7 +114,7 @@ class AndroidXmlFormatter:
 android_xml_formatter = AndroidXmlFormatter()
 
 
-class AndroidManifestCommand(sublime_plugin.TextCommand):
+class AndroidXmlFormatterCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         region = sublime.Region(0, self.view.size())
         text = self.view.substr(region)
