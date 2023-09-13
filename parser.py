@@ -1,12 +1,12 @@
 import re
 import xml.etree.ElementTree as ET
-from collections import OrderedDict
 
 
 class ManifestFormatter:
 
     def __init__(self):
         self.namespace = []
+        self.last_element = None
         self.pattern = re.compile(r'\{(.+)}(.+)')
 
     def format(self, text):
@@ -15,8 +15,11 @@ class ManifestFormatter:
         self.handle_element(root, 0)
 
     def handle_element(self, root, index):
-        space = " " * index * 4
         tag = root.tag
+        if self.last_element is not None and tag != self.last_element.tag and len(self.last_element.attrib) > 0:
+            print()
+        self.last_element = root
+        space = " " * index * 4
         print(f'{space}<{tag}', end='')
         attr_lines = []
         attrib = root.attrib
@@ -52,11 +55,25 @@ class ManifestFormatter:
         # namespace end
         for i in range(namespace_count):
             self.namespace.pop()
+        self.last_element = root
 
     def match_namespace(self, key):
         match = self.pattern.match(key)
         if match:
-            return match[1], match[1].split('/')[-1]
+            alize = match[1].split('/')[-1]
+            index = 0
+            name = alize
+            while True:
+                index += 1
+                is_valid = True
+                for v1, v2 in self.namespace:
+                    if v2 == name:
+                        is_valid = False
+                        break
+                if is_valid:
+                    break
+                name = f'{alize}{index}'
+            return match[1], name
         return None, None
 
     def is_in_namespace(self, name) -> bool:
@@ -66,6 +83,11 @@ class ManifestFormatter:
         return False
 
     def key_name_alize(self, key):
+        """
+        判读是否使用namespace, 如何存在则返回别名, 其他则key
+        :param key:
+        :return:
+        """
         match = self.pattern.match(key)
         if match:
             name1, name2 = match[1], match[2]
