@@ -5,88 +5,84 @@ NS_ANDROID = 'http://schemas.android.com/apk/res/android'
 NS_APP = 'http://schemas.android.com/apk/res-auto'
 NS_TOOLS = 'http://schemas.android.com/tools'
 
+NS_DICT = {NS_ANDROID: 'android', NS_APP: 'app', NS_TOOLS: 'tools'}
+
 
 class AndroidXmlFormatter:
 
     def __init__(self):
-        self.namespace = []
+        self.namespace = {}
+        self.elements = []
         self.last_element = None
         self.pattern = re.compile(r'\{(.+)}(.+)')
 
     def format(self, text):
         root = ET.fromstring(text)
+        self.handle_namespace(root)
         print('<?xml version="1.0" encoding="utf-8"?>')
-        self.handle_element(root, 0)
+        self.handle_element(root, 0, 0)
 
-    def handle_element(self, root, index):
+    def handle_namespace(self, root):
+        attrib = root.attrib
+        for attr_key in attrib:
+            match = self.pattern.match(attr_key)
+            if match:
+                name = match[1]
+                if name in NS_DICT and name not in self.namespace:
+                    self.namespace[name] = NS_DICT[name]
+        for element in root:
+            self.handle_namespace(element)
+
+    def handle_element(self, root, level, index):
         tag = root.tag
-        if self.last_element is not None and tag != self.last_element.tag and len(self.last_element.attrib) > 0:
-            print()
+        if self.last_element is None or tag != self.last_element.tag:
+            if index > 0:
+                print()
+            elif len(self.elements) > 0 and len(self.elements[-1].attrib) > 0:
+                print()
+
+        # tag start
+        self.elements.append(root)
         self.last_element = root
-        space = " " * index * 4
+        space = " " * level * 4
         print(f'{space}<{tag}', end='')
         attr_lines = []
-        attrib = root.attrib
 
-        # namespace start
-        namespace_count = 0
-        for key in attrib:
-            name, alize = self.match_namespace(key)
-            if name and not self.is_in_namespace(name):
-                self.namespace.append((name, alize))
-                namespace_count += 1
+        # namespace
+        if level == 0:
+            for name in self.namespace:
+                alize = self.namespace[name]
                 attr_lines.append(f'xmlns:{alize}="{name}"')
 
         # 属性
+        attrib = root.attrib
         for key in attrib:
-            name = self.key_name_alize(key)
+            name = self.get_attr_name_alize(key)
             attr_lines.append(f'{name}="{attrib[key]}"')
-        if len(attr_lines) > 0:
+        separator = f'\n{space}{" " * 4}'
+        attr_count = len(attr_lines)
+        if attr_count > 0:
             print(' ', end='')
-            if is_tag_newline(tag):
-                print(f'\n{space}{" " * 4}', end='')
-        print(f'\n{space}{" " * 4}'.join(attr_lines), end='')
+            if attr_count > 1 and (is_tag_attr_newline(tag) or attr_count == 2):
+                print(separator, end='')
+        print(separator.join(attr_lines), end='')
 
         # 处理子元素
         if len(root) <= 0:
             print('/>')
         else:
             print('>')
+            i = -1
             for element in root:
-                self.handle_element(element, index + 1)
+                i += 1
+                self.handle_element(element, level + 1, i)
             print(f'{space}</{tag}>')
 
-        # namespace end
-        for i in range(namespace_count):
-            self.namespace.pop()
+        # tag end
         self.last_element = root
+        self.elements.pop()
 
-    def match_namespace(self, key):
-        match = self.pattern.match(key)
-        if match:
-            alize = match[1].split('/')[-1]
-            index = 0
-            name = alize
-            while True:
-                index += 1
-                is_valid = True
-                for v1, v2 in self.namespace:
-                    if v2 == name:
-                        is_valid = False
-                        break
-                if is_valid:
-                    break
-                name = f'{alize}{index}'
-            return match[1], name
-        return None, None
-
-    def is_in_namespace(self, name) -> bool:
-        for value, _ in self.namespace:
-            if name == value:
-                return True
-        return False
-
-    def key_name_alize(self, key):
+    def get_attr_name_alize(self, key):
         """
         判读是否使用namespace, 如何存在则返回别名, 其他则key
         :param key:
@@ -95,15 +91,15 @@ class AndroidXmlFormatter:
         match = self.pattern.match(key)
         if match:
             name1, name2 = match[1], match[2]
-            for value, alize in self.namespace:
-                if name1 == value:
-                    return f'{alize}:{name2}'
+            if name1 in self.namespace:
+                alize = self.namespace[name1]
+                return f'{alize}:{name2}'
         return key
 
 
-def is_tag_newline(tag):
-    return tag in ['uses-sdk', 'uses-feature', 'uses-library', 'permission', 'meta-data', 'application', 'activity',
-                   'activity-alias', 'provider', 'service', 'receiver', ]
+def is_tag_attr_newline(tag):
+    return tag in ['application', 'activity', 'activity-alias', 'provider', 'service', 'receiver', 'uses-feature',
+                   'uses-permission', 'meta-data']
 
 
 if __name__ == '__main__':
