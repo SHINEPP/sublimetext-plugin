@@ -120,7 +120,7 @@ android_xml_formatter = AndroidXmlFormatter()
 class AndroidManifestCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         region = sublime.Region(0, self.view.size())
-        text = self.view.substr(region).encode('utf-8')
+        text = self.view.substr(region)
         if len(text) > 0:
             result = android_xml_formatter.format(text)
             if result != text:
