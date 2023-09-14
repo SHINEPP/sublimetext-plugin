@@ -1,6 +1,3 @@
-import sublime
-import sublime_plugin
-
 import os
 import re
 import xml.etree.ElementTree as ET
@@ -124,7 +121,17 @@ class AndroidXmlFormatter:
         return key
 
 
+if __name__ == '__main__':
+    path = '/Users/zhouzhenliang/Desktop/sublime-plugin/AndroidManifest.xml'
+    # path = '/Users/zhouzhenliang/Desktop/sublime-plugin/strings.xml'
+    with open(path, 'r') as file:
+        print(AndroidXmlFormatter().format(file.read()))
+    exit(0)
+
 android_xml_formatter = AndroidXmlFormatter()
+
+import sublime
+import sublime_plugin
 
 
 class AndroidXmlFormatterCommand(sublime_plugin.TextCommand):
