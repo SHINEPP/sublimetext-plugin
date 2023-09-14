@@ -1,0 +1,7 @@
+[
+	{
+		"caption": "Focus Side Bar",
+	    "command": "focus_side_bar",
+	    "id":"focus_side_bar"
+	}
+]
