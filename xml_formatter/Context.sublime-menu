@@ -1,6 +1,6 @@
 [
 	{
-		"caption": "AndroidXmlFormatter",
+		"caption": "Format Android XML",
 	    "command": "android_xml_formatter",
 	    "id":"android_xml_formatter"
 	}

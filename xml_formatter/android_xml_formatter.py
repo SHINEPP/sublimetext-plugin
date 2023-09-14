@@ -30,7 +30,7 @@ class AndroidXmlFormatter:
         root = ET.fromstring(text)
         self._handle_namespace(root)
 
-        self.result += '<?xml version="1.0" encoding="utf-8"?>' + os.linesep
+        self.result += '<?xml version="1.0" encoding="utf-8"?>'
         self._handle_element(root, 0, 0)
         return self.result
 
@@ -46,18 +46,24 @@ class AndroidXmlFormatter:
             self._handle_namespace(element)
 
     def _handle_element(self, root, level, index):
+        # tag start
         tag = root.tag
-        if index == 0 or self.last_element is None or tag != self.last_element.tag:
-            if index > 0:
+        parent = None
+        if len(self.elements) > 0:
+            parent = self.elements[-1]
+        if index == 0:
+            # 父tag至少2个attr
+            if parent is not None and len(parent.attrib) >= 2:
                 self.result += os.linesep
-            elif len(self.elements) > 0 and len(self.elements[-1].attrib) > 1:
+        else:
+            # 前后tag不同
+            if tag != self.last_element.tag:
                 self.result += os.linesep
 
-        # tag start
+        space = " " * level * 4
+        self.result += f'{os.linesep}{space}<{tag}'
         self.elements.append(root)
         self.last_element = root
-        space = " " * level * 4
-        self.result += f'{space}<{tag}'
         attr_lines = []
 
         # namespace
@@ -82,15 +88,22 @@ class AndroidXmlFormatter:
         self.result += separator.join(attr_lines)
 
         # 处理子元素
-        if len(root) <= 0:
-            self.result += '/>' + os.linesep
+        text = root.text
+        if len(root) <= 0 and text is None:
+            self.result += '/>'
         else:
-            self.result += '>' + os.linesep
+            self.result += '>'
+            if text is not None and len(text.strip()) > 0:
+                self.result += text
+
             i = -1
             for element in root:
                 i += 1
                 self._handle_element(element, level + 1, i)
-            self.result += f'{space}</{tag}>{os.linesep}'
+            if len(root) > 0:
+                self.result += f'{os.linesep}{space}</{tag}>'
+            else:
+                self.result += f'</{tag}>'
 
         # tag end
         self.last_element = root
