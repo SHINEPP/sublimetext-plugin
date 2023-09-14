@@ -9,7 +9,7 @@ NS_TOOLS = 'http://schemas.android.com/tools'
 NS_DICT = {NS_ANDROID: 'android', NS_APP: 'app', NS_TOOLS: 'tools'}
 
 
-class AndroidXmlFormatter:
+class XmlFormatter:
 
     def __init__(self):
         self.namespace = {}
@@ -125,20 +125,22 @@ if __name__ == '__main__':
     path = '/Users/zhouzhenliang/Desktop/sublime-plugin/AndroidManifest.xml'
     # path = '/Users/zhouzhenliang/Desktop/sublime-plugin/strings.xml'
     with open(path, 'r') as file:
-        print(AndroidXmlFormatter().format(file.read()))
+        print(XmlFormatter().format(file.read()))
     exit(0)
-
-android_xml_formatter = AndroidXmlFormatter()
 
 import sublime
 import sublime_plugin
 
 
 class AndroidXmlFormatterCommand(sublime_plugin.TextCommand):
+    def __init__(self, view):
+        super().__init__(view)
+        self._formatter = XmlFormatter()
+
     def run(self, edit):
         region = sublime.Region(0, self.view.size())
         text = self.view.substr(region)
         if len(text) > 0:
-            result = android_xml_formatter.format(text)
+            result = self._formatter.format(text)
             if result != text:
                 self.view.replace(edit, region, result)
