@@ -1,13 +1,13 @@
 Android xml formatter Plugin
 ===============================
 
-Plugin that format android xml file.
+Sublime Text plugin that format android xml file.
 
 ## Installation:
 
 - Add xml_formatter/android_xml_formatter.py to **Sublime Text**: Packages Folder
 
-- Option: Edit or Add **Sublime Text** Packages Main.sublime-menu
+- Edit or add **Sublime Text** Packages Main.sublime-menu
 
 ```json
 [
@@ -30,7 +30,7 @@ Plugin that format android xml file.
 ]
 ```
 
-- Option: Edit or Add **Sublime Text** Packages Context.sublime-menu
+- Edit or add **Sublime Text** Packages Context.sublime-menu
 
 ```json
 [
