@@ -144,3 +144,8 @@ class AndroidXmlFormatterCommand(sublime_plugin.TextCommand):
             result = self._formatter.format(text)
             if result != text:
                 self.view.replace(edit, region, result)
+
+    def is_visible(self) -> bool:
+        if not super().is_visible():
+            return False
+        return self.view.file_name().lower().endswith('.xml')
